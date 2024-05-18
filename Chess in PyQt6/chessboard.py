@@ -1,26 +1,100 @@
-from PyQt6.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QGraphicsItem, QVBoxLayout, QPushButton, \
-    QRadioButton, QWidget, QLineEdit
-from PyQt6.QtGui import QPixmap, QPainter, QBrush, QColor, QPen, QPainterPath
+from PyQt6.QtWidgets import QGraphicsScene
+from PyQt6.QtGui import QBrush, QColor, QPen
 from chess_piece import ChessPiece
 
-class Chessboard(QGraphicsScene):
-    def __init__(self, wielkosc):
-        super().__init__()
-        self.bierki = {}
-        self.biale = {}
-        self.czarne = {}
-        self.wielkosc_pola = wielkosc
-        self.turn = 2
-        self.rysuj()
 
-    def rysuj(self):
-        self.setSceneRect(0, 0, self.wielkosc_pola * 8, self.wielkosc_pola * 8)
+class Chessboard(QGraphicsScene):
+    def __init__(self, square_size):
+        super().__init__()
+        self.square_size = square_size
+        self.pieces = {}
+        self.white = {}
+        self.black = {}
+        self.initUI()
+
+    def initUI(self):
+        self.draw_board()
+        self.draw_pieces()
+
+    def draw_board(self):
+        self.setSceneRect(0, 0, self.square_size * 8, self.square_size * 8)
         for row in range(8):
             for col in range(8):
-                x = col * self.wielkosc_pola
-                y = row * self.wielkosc_pola
+                x = col * self.square_size
+                y = row * self.square_size
                 if (row + col) % 2 == 0:
-                    kolor = QColor("brown")
+                    color = QColor("brown")
                 else:
-                    kolor = QColor("beige")
-                self.addRect(x, y, self.wielkosc_pola, self.wielkosc_pola, QPen(QColor("black")), QBrush(kolor))
+                    color = QColor("beige")
+                self.addRect(x, y, self.square_size, self.square_size, QPen(QColor("black")), QBrush(color))
+
+    def draw_pieces(self):
+        length = width = self.square_size * 7
+
+        piece = ChessPiece("Chess_pieces_pngs/white_king.png", self.square_size, f"king3")
+        piece.setPos(width - 3 * self.square_size, length)
+        self.addItem(piece)
+
+        piece = ChessPiece("Chess_pieces_pngs/black_king.png", self.square_size, f"king",)
+        piece.setPos(width - 3 * self.square_size, 0)
+        self.addItem(piece)
+
+        for j in range(2):
+            piece = ChessPiece("Chess_pieces_pngs/white_rook.png", self.square_size, f"rook{j}",)
+            piece.setPos(j * width, length)
+            self.addItem(piece)
+
+            piece = ChessPiece("Chess_pieces_pngs/black_rook.png", self.square_size, f"rook{j}",)
+            piece.setPos(j * width, 0)
+            self.addItem(piece)
+
+        for j in range(2):
+            offset = 1 if j % 2 == 0 else -1
+            piece = ChessPiece("Chess_pieces_pngs/white_knight.png", self.square_size, f"knight{j}",)
+            piece.setPos(j * width + offset * self.square_size, length)
+            self.addItem(piece)
+
+            piece = ChessPiece("Chess_pieces_pngs/black_knight.png", self.square_size, f"knight{j}",)
+            piece.setPos(j * width + offset * self.square_size, 0)
+            self.addItem(piece)
+
+        for j in range(2):
+            offset = 2 if j % 2 == 0 else -2
+            piece = ChessPiece("Chess_pieces_pngs/white_bishop.png", self.square_size, f"bishop{j}",)
+            piece.setPos(j * width + offset * self.square_size, length)
+            self.addItem(piece)
+
+            piece = ChessPiece("Chess_pieces_pngs/black_bishop.png", self.square_size, f"bishop{j}",)
+            piece.setPos(j * width + offset * self.square_size, 0)
+            self.addItem(piece)
+
+        piece = ChessPiece("Chess_pieces_pngs/white_queen.png", self.square_size, "queen",)
+        piece.setPos(3 * self.square_size, length)
+        self.addItem(piece)
+
+        piece = ChessPiece("Chess_pieces_pngs/black_queen.png", self.square_size, "queen",)
+        piece.setPos(3 * self.square_size, 0)
+        self.addItem(piece)
+
+        pawns = ["Chess_pieces_pngs/white_pawn.png", "Chess_pieces_pngs/black_pawn.png"]
+        for i in range(8):
+            for j, path in enumerate(pawns):
+                piece = ChessPiece(path, self.square_size, f"pawn{i}",)
+                if j % 2 == 0:
+                    y = (length - self.square_size)
+                else:
+                    y = self.square_size
+                x = self.square_size * i
+                piece.setPos(x, y)
+                self.addItem(piece)
+
+        for piece in self.items():
+            if isinstance(piece, ChessPiece):
+                piece.update_pos()
+                if piece.y() < length/2:
+                    self.black[piece.chess_type] = piece
+                else:
+                    self.white[piece.chess_type] = piece
+        self.pieces["white"] = self.white
+        self.pieces["black"] = self.black
+
