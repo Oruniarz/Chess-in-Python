@@ -1,4 +1,5 @@
 import sys
+
 from PyQt6.QtWidgets import (QApplication, QGraphicsView, QVBoxLayout, QPushButton,
                              QRadioButton, QWidget, QLineEdit, QLabel)
 from chessboard import Chessboard
@@ -7,7 +8,6 @@ DATA_SIZE = 2000
 HOST = "localhost"
 PORT = 80
 SERVER_ADDRESS = (HOST, PORT)
-
 
 class MainWindow(QWidget):
     def __init__(self):
