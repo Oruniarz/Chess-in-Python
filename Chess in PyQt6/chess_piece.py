@@ -232,16 +232,17 @@ class ChessPiece(QGraphicsItem):
                 else:  # bottom right squares
                     fut_pos = (self.current_pos[0] + (i + 1) * self.square_size,
                                self.current_pos[1] + (i + 1) * self.square_size)
-                for piece in list(own_pieces.values()):
-                    if piece.current_pos == fut_pos:
-                        appr = False
-                if appr:
-                    for piece in list(opponent_pieces.values()):
+                if 0 <= fut_pos[0] <= 7 * self.square_size and 0 <= fut_pos[1] <= 7 * self.square_size:
+                    for piece in list(own_pieces.values()):
                         if piece.current_pos == fut_pos:
-                            possible_captures.append(fut_pos)
                             appr = False
                     if appr:
-                        possible_moves.append(fut_pos)
+                        for piece in list(opponent_pieces.values()):
+                            if piece.current_pos == fut_pos:
+                                possible_captures.append(fut_pos)
+                                appr = False
+                        if appr:
+                            possible_moves.append(fut_pos)
         for j in range(2):
             appr = True
             for i in range(num_squares_to_left):
@@ -251,16 +252,17 @@ class ChessPiece(QGraphicsItem):
                 else:  # bottom left squares
                     fut_pos = (self.current_pos[0] - (i + 1) * self.square_size,
                                self.current_pos[1] + (i + 1) * self.square_size)
-                for piece in list(own_pieces.values()):
-                    if piece.current_pos == fut_pos:
-                        appr = False
-                if appr:
-                    for piece in list(opponent_pieces.values()):
+                if 0 <= fut_pos[0] <= 7 * self.square_size and 0 <= fut_pos[1] <= 7 * self.square_size:
+                    for piece in list(own_pieces.values()):
                         if piece.current_pos == fut_pos:
-                            possible_captures.append(fut_pos)
                             appr = False
                     if appr:
-                        possible_moves.append(fut_pos)
+                        for piece in list(opponent_pieces.values()):
+                            if piece.current_pos == fut_pos:
+                                possible_captures.append(fut_pos)
+                                appr = False
+                        if appr:
+                            possible_moves.append(fut_pos)
         return possible_moves, possible_captures
 
     def queen_moves(self, own_pieces, opponent_pieces):
