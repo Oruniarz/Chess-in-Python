@@ -44,17 +44,15 @@ class ChessPiece(QGraphicsItem):
             self.setPos(self.future_pos[0], self.future_pos[1])
             self.has_moved = True
             self.chessboard.update_turn()
-            super().mouseReleaseEvent(event)
         elif self.future_pos in self.possible_captures:
             self.current_pos = self.future_pos
             self.setPos(self.future_pos[0], self.future_pos[1])
             self.has_moved = True
             self.chessboard.update_turn()
-            super().mouseReleaseEvent(event)
         else:
             self.future_pos = self.current_pos
             self.setPos(self.future_pos[0], self.future_pos[1])
-            super().mouseReleaseEvent(event)
+        super().mouseReleaseEvent(event)
 
     def update_pos(self, online=False, future_pos=None):
         self.current_pos = self.x(), self.y()
@@ -73,15 +71,18 @@ class ChessPiece(QGraphicsItem):
             case pawn if "pawn" in self.chess_type:
                 (self.possible_moves,
                  self.possible_captures) = self.pawn_moves(own_pieces, opponent_pieces, direction)
-                pass
             case rook if "rook" in self.chess_type:
-                pass
+                (self.possible_moves,
+                 self.possible_captures) = self.rook_moves(own_pieces, opponent_pieces)
             case bishop if "bishop" in self.chess_type:
-                pass
+                (self.possible_moves,
+                 self.possible_captures) = self.bishop_moves(own_pieces, opponent_pieces)
             case queen if "queen" in self.chess_type:
-                pass
+                (self.possible_moves,
+                 self.possible_captures) = self.queen_moves(own_pieces, opponent_pieces)
             case knight if "knight" in self.chess_type:
-                pass
+                (self.possible_moves,
+                 self.possible_captures) = self.knight_moves(own_pieces, opponent_pieces)
             case king if "king" in self.chess_type:
                 pass
 
@@ -123,4 +124,154 @@ class ChessPiece(QGraphicsItem):
                 if appr:
                     possible_captures.append(position)
                     pass
+        return possible_moves, possible_captures
+
+    def knight_moves(self, own_pieces, opponent_pieces):
+        appr = True
+        possible_moves = []
+        possible_captures = []
+        fut_pos = [
+            (self.current_pos[0] + 2 * self.square_size, self.current_pos[1] + self.square_size),
+            (self.current_pos[0] + 2 * self.square_size, self.current_pos[1] - self.square_size),
+            (self.current_pos[0] - 2 * self.square_size, self.current_pos[1] + self.square_size),
+            (self.current_pos[0] - 2 * self.square_size, self.current_pos[1] - self.square_size),
+            (self.current_pos[0] + self.square_size, self.current_pos[1] + 2 * self.square_size),
+            (self.current_pos[0] - self.square_size, self.current_pos[1] + 2 * self.square_size),
+            (self.current_pos[0] + self.square_size, self.current_pos[1] - 2 * self.square_size),
+            (self.current_pos[0] - self.square_size, self.current_pos[1] - 2 * self.square_size),
+        ]
+        for i, move in enumerate(fut_pos):
+            appr = True
+            if 0 <= move[0] <= 7 * self.square_size and 0 <= move[1] <= 7 * self.square_size:
+                for piece in list(own_pieces.values()):
+                    if piece.current_pos == move:
+                        appr = False
+                if appr:
+                    for piece in list(opponent_pieces.values()):
+                        if piece.current_pos == move:
+                            appr = False
+                    if appr:
+                        possible_moves.append(move)
+                    else:
+                        possible_captures.append(move)
+        return possible_moves, possible_captures
+
+    def rook_moves(self, own_pieces, opponent_pieces):
+        appr = True
+        possible_moves = []
+        possible_captures = []
+        num_moves = int((7 * self.square_size - self.current_pos[0]) / self.square_size)
+        for i in range(num_moves):  # all the moves to the right side of a board
+            fut_pos = (self.current_pos[0] + (i + 1) * self.square_size, self.current_pos[1])
+            for piece in list(own_pieces.values()):
+                if piece.current_pos == fut_pos:
+                    appr = False
+            if appr:
+                for piece in list(opponent_pieces.values()):
+                    if piece.current_pos == fut_pos:
+                        possible_captures.append(fut_pos)
+                        appr = False
+                if appr:
+                    possible_moves.append(fut_pos)
+        num_moves = int((self.current_pos[0]) / self.square_size)
+        appr = True
+        for i in range(num_moves):  # all the moves to the left side of a board
+            fut_pos = (self.current_pos[0] - (i + 1) * self.square_size, self.current_pos[1])
+            for piece in list(own_pieces.values()):
+                if piece.current_pos == fut_pos:
+                    appr = False
+            if appr:
+                for piece in list(opponent_pieces.values()):
+                    if piece.current_pos == fut_pos:
+                        possible_captures.append(fut_pos)
+                        appr = False
+                if appr:
+                    possible_moves.append(fut_pos)
+        num_moves = int((7 * self.square_size - self.current_pos[1]) / self.square_size)
+        appr = True
+        for i in range(num_moves):  # all the moves to the bottom side of a board
+            fut_pos = (self.current_pos[0], self.current_pos[1] + (i + 1) * self.square_size)
+            for piece in list(own_pieces.values()):
+                if piece.current_pos == fut_pos:
+                    appr = False
+            if appr:
+                for piece in list(opponent_pieces.values()):
+                    if piece.current_pos == fut_pos:
+                        possible_captures.append(fut_pos)
+                        appr = False
+                if appr:
+                    possible_moves.append(fut_pos)
+        num_moves = int((self.current_pos[1]) / self.square_size)
+        appr = True
+        for i in range(num_moves):  # all the moves to the top side of a board
+            fut_pos = (self.current_pos[0], self.current_pos[1] - (i + 1) * self.square_size)
+            for piece in list(own_pieces.values()):
+                if piece.current_pos == fut_pos:
+                    appr = False
+            if appr:
+                for piece in list(opponent_pieces.values()):
+                    if piece.current_pos == fut_pos:
+                        possible_captures.append(fut_pos)
+                        appr = False
+                if appr:
+                    possible_moves.append(fut_pos)
+        return possible_moves, possible_captures
+
+    def bishop_moves(self, own_pieces, opponent_pieces):
+        appr = True
+        possible_moves = []
+        possible_captures = []
+        num_squares_to_right = int((7 * self.square_size - self.current_pos[0]) / self.square_size)
+        num_squares_to_left = int((self.current_pos[0]) / self.square_size)
+        for j in range(2):  # squares to the right side of a board
+            appr = True
+            for i in range(num_squares_to_right):
+                if j == 0:  # top right squares
+                    fut_pos = (self.current_pos[0] + (i + 1) * self.square_size,
+                               self.current_pos[1] - (i + 1) * self.square_size)
+                else:  # bottom right squares
+                    fut_pos = (self.current_pos[0] + (i + 1) * self.square_size,
+                               self.current_pos[1] + (i + 1) * self.square_size)
+                for piece in list(own_pieces.values()):
+                    if piece.current_pos == fut_pos:
+                        appr = False
+                if appr:
+                    for piece in list(opponent_pieces.values()):
+                        if piece.current_pos == fut_pos:
+                            possible_captures.append(fut_pos)
+                            appr = False
+                    if appr:
+                        possible_moves.append(fut_pos)
+        for j in range(2):
+            appr = True
+            for i in range(num_squares_to_left):
+                if j == 0:  # top left squares
+                    fut_pos = (self.current_pos[0] - (i + 1) * self.square_size,
+                               self.current_pos[1] - (i + 1) * self.square_size)
+                else:  # bottom left squares
+                    fut_pos = (self.current_pos[0] - (i + 1) * self.square_size,
+                               self.current_pos[1] + (i + 1) * self.square_size)
+                for piece in list(own_pieces.values()):
+                    if piece.current_pos == fut_pos:
+                        appr = False
+                if appr:
+                    for piece in list(opponent_pieces.values()):
+                        if piece.current_pos == fut_pos:
+                            possible_captures.append(fut_pos)
+                            appr = False
+                    if appr:
+                        possible_moves.append(fut_pos)
+        return possible_moves, possible_captures
+
+    def queen_moves(self, own_pieces, opponent_pieces):
+        queen_moves = []
+        queen_captures = []
+        possible_moves = []
+        possible_captures = []
+        possible_moves, possible_captures = self.bishop_moves(own_pieces, opponent_pieces)
+        queen_moves, queen_captures = self.rook_moves(own_pieces, opponent_pieces)
+        for move in queen_moves:
+            possible_moves.append(move)
+        for capture in queen_captures:
+            possible_captures.append(capture)
         return possible_moves, possible_captures
