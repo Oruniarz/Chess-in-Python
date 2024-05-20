@@ -15,6 +15,7 @@ class ChessPiece(QGraphicsItem):
         self.possible_captures = []
         self.team = None
         self.has_moved = False
+        self.check = False
 
         self.img = QPixmap(img_path).scaled(self.square_size, self.square_size)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, True)
@@ -44,29 +45,58 @@ class ChessPiece(QGraphicsItem):
             if self.chess_type == "king":
                 if self.future_pos[0] == self.current_pos[0] + 2 * self.square_size:  # castling to the right
                     rook = self.chessboard.pieces[self.team]["rook1"]
-                    rook.setPos(self.future_pos[0] - self.square_size, self.future_pos[1])
+                    old_pos = self.current_pos
+                    old_rook_pos = rook.current_pos
                     rook.current_pos = (self.future_pos[0] - self.square_size, self.future_pos[1])
-                    rook.has_moved = True
                     self.current_pos = self.future_pos
-                    self.setPos(self.future_pos[0], self.future_pos[1])
-                    self.has_moved = True
+                    if not self.check_for_checks("right"):
+                        rook.setPos(self.future_pos[0] - self.square_size, self.future_pos[1])
+                        rook.has_moved = True
+                        self.setPos(self.future_pos[0], self.future_pos[1])
+                        self.has_moved = True
+                        self.chessboard.update_turn()
+                    else:
+                        self.future_pos = self.current_pos = old_pos
+                        rook.future_pos = rook.current_pos = old_rook_pos
+                        self.setPos(self.future_pos[0], self.future_pos[1])
+                        rook.setPos(rook.future_pos[0], rook.future_pos[1])
                 elif self.future_pos[0] == self.current_pos[0] - 2 * self.square_size:  # castling to the left
                     rook = self.chessboard.pieces[self.team]["rook0"]
-                    rook.setPos(self.future_pos[0] + self.square_size, self.future_pos[1])
+                    old_pos = self.current_pos
+                    old_rook_pos = rook.current_pos
                     rook.current_pos = (self.future_pos[0] + self.square_size, self.future_pos[1])
-                    rook.has_moved = True
                     self.current_pos = self.future_pos
-                    self.setPos(self.future_pos[0], self.future_pos[1])
-                    self.has_moved = True
+                    if not self.check_for_checks("left"):
+                        rook.setPos(self.future_pos[0] + self.square_size, self.future_pos[1])
+                        rook.has_moved = True
+                        self.setPos(self.future_pos[0], self.future_pos[1])
+                        self.has_moved = True
+                        self.chessboard.update_turn()
+                    else:
+                        self.future_pos = self.current_pos = old_pos
+                        rook.future_pos = rook.current_pos = old_rook_pos
+                        self.setPos(self.future_pos[0], self.future_pos[1])
+                        rook.setPos(rook.future_pos[0], rook.future_pos[1])
                 else:  # "normal" move
+                    old_pos = self.current_pos
                     self.current_pos = self.future_pos
+                    if not self.check_for_checks(None):
+                        self.setPos(self.future_pos[0], self.future_pos[1])
+                        self.has_moved = True
+                        self.chessboard.update_turn()
+                    else:
+                        self.future_pos = self.current_pos = old_pos
+                        self.setPos(self.future_pos[0], self.future_pos[1])
+            else:  # pieces other than king
+                old_pos = self.current_pos
+                self.current_pos = self.future_pos
+                if not self.check_for_checks(None):
                     self.setPos(self.future_pos[0], self.future_pos[1])
                     self.has_moved = True
-            else:  # pieces other than king
-                self.current_pos = self.future_pos
-                self.setPos(self.future_pos[0], self.future_pos[1])
-                self.has_moved = True
-            self.chessboard.update_turn()
+                    self.chessboard.update_turn()
+                else:
+                    self.future_pos = self.current_pos = old_pos
+                    self.setPos(self.future_pos[0], self.future_pos[1])
         elif self.future_pos in self.possible_captures:  # capturing
             self.current_pos = self.future_pos
             self.setPos(self.future_pos[0], self.future_pos[1])
@@ -75,10 +105,67 @@ class ChessPiece(QGraphicsItem):
         else:  # move not allowed
             self.future_pos = self.current_pos
             self.setPos(self.future_pos[0], self.future_pos[1])
+        for team in list(self.chessboard.pieces.values()):
+            for piece in list(team.values()):
+                piece.update_possible_moves()
 
     def update_pos(self, online=False, future_pos=None):  # function for updating position during the initialization of chessboard
         self.current_pos = self.x(), self.y()
         self.future_pos = self.current_pos
+
+    def check_for_checks(self, castling):
+        check = False
+        opponent_check = False
+        if self.team == "white":
+            own_pieces = self.chessboard.white
+            opponent_pieces = self.chessboard.black
+            own_king = own_pieces["king"]
+            opponent_king = opponent_pieces["king"]
+        elif self.team == "black":
+            own_pieces = self.chessboard.black
+            opponent_pieces = self.chessboard.white
+            own_king = own_pieces["king"]
+            opponent_king = opponent_pieces["king"]
+
+        for piece in list(own_pieces.values()):
+            piece.update_possible_moves()
+        for piece in list(opponent_pieces.values()):
+            piece.update_possible_moves()
+
+        for piece in list(opponent_pieces.values()):
+            for move in piece.possible_captures:
+                if own_king.current_pos == move:
+                    check = True
+                if castling == "right" and not check:
+                    if (own_king.current_pos[0] - self.square_size, own_king.current_pos[1]) == move:
+                        check = True
+                if castling == "left" and not check:
+                    if (own_king.current_pos[0] + self.square_size, own_king.current_pos[1]) == move:
+                        check = True
+
+        if castling == "right" and not check:
+            for piece in list(opponent_pieces.values()):
+                for move in piece.possible_moves:
+                    if (own_king.current_pos[0] - 2 * self.square_size, own_king.current_pos[1]) == move:
+                        check = True
+
+        if castling == "left" and not check:
+            for piece in list(opponent_pieces.values()):
+                for move in piece.possible_moves:
+                    if (own_king.current_pos[0] + 2 * self.square_size, own_king.current_pos[1]) == move:
+                        check = True
+
+        if not check:
+            for piece in list(own_pieces.values()):
+                piece.check = False
+                for move in piece.possible_captures:
+                    if opponent_king == move:
+                        opponent_check = True
+
+            for piece in list(opponent_pieces.values()):
+                piece.check = opponent_check
+
+        return check
 
     def update_possible_moves(self):  # function for updating possible moves of a piece
         if self.team == "white":
@@ -89,7 +176,7 @@ class ChessPiece(QGraphicsItem):
             own_pieces = self.chessboard.black
             opponent_pieces = self.chessboard.white
             direction = 1
-        match self.chessboard:
+        match self.chess_type:
             case pawn if "pawn" in self.chess_type:
                 (self.possible_moves,
                  self.possible_captures) = self.pawn_moves(own_pieces, opponent_pieces, direction)
