@@ -13,11 +13,11 @@ class Chessboard(QGraphicsScene):
         self.turn = "white"
         self.initUI()
 
-    def initUI(self):
+    def initUI(self):  # initialization of a chessboard
         self.draw_board()
         self.draw_pieces()
 
-    def draw_board(self):
+    def draw_board(self):  # drawing board
         self.setSceneRect(0, 0, self.square_size * 8, self.square_size * 8)
         for row in range(8):
             for col in range(8):
@@ -29,7 +29,7 @@ class Chessboard(QGraphicsScene):
                     color = QColor("beige")
                 self.addRect(x, y, self.square_size, self.square_size, QPen(QColor("black")), QBrush(color))
 
-    def draw_pieces(self):
+    def draw_pieces(self):  # creating chess pieces
         length = width = self.square_size * 7
 
         piece = ChessPiece(img_path="Chess_pieces_pngs/white_king.png", square_size=self.square_size,
@@ -118,7 +118,7 @@ class Chessboard(QGraphicsScene):
         for piece in list(self.black.values()):
             piece.update_possible_moves()
 
-    def update_turn(self):
+    def update_turn(self):  # function for changing turns
         if self.turn == "white":
             self.turn = "black"
             for piece in list(self.white.values()):
