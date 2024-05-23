@@ -101,11 +101,20 @@ class ChessPiece(QGraphicsItem):
                     self.future_pos = self.current_pos = old_pos
                     self.setPos(self.future_pos[0], self.future_pos[1])
         elif self.future_pos in self.possible_captures:  # capturing
+            old_pos = self.current_pos
             self.current_pos = self.future_pos
-            self.capture()
-            self.setPos(self.future_pos[0], self.future_pos[1])
-            self.has_moved = True
-            self.chessboard.update_turn()
+            piece_for_capture = [piece for piece in list(self.opponent_pieces.values())
+                                 if piece.current_pos == self.current_pos][0]
+            del self.opponent_pieces[piece_for_capture.chess_type]
+            if not self.check_for_checks():
+                self.chessboard.removeItem(piece_for_capture)
+                self.setPos(self.future_pos[0], self.future_pos[1])
+                self.has_moved = True
+                self.chessboard.update_turn()
+            else:
+                self.opponent_pieces[piece_for_capture.chess_type] = piece_for_capture
+                self.future_pos = self.current_pos = old_pos
+                self.setPos(self.future_pos[0], self.future_pos[1])
         else:  # move not allowed
             self.future_pos = self.current_pos
             self.setPos(self.future_pos[0], self.future_pos[1])
@@ -117,12 +126,6 @@ class ChessPiece(QGraphicsItem):
         """Function for updating position during the initialization of chessboard."""
         self.current_pos = self.x(), self.y()
         self.future_pos = self.current_pos
-
-    def capture(self):
-        piece_for_capture = [piece for piece in list(self.opponent_pieces.values())
-                             if piece.current_pos == self.current_pos][0]
-        del self.opponent_pieces[piece_for_capture.chess_type]
-        self.chessboard.removeItem(piece_for_capture)
 
     def update_pos(self):
         """Function that updates possible moves for all pieces. Can be called once by any piece and moves of all pieces
