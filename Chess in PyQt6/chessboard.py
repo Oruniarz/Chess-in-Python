@@ -102,39 +102,38 @@ class Chessboard(QGraphicsScene):
 
         for piece in self.items():
             if isinstance(piece, ChessPiece):
-                piece.update_pos()
+                piece.init_update_pos()
                 if piece.y() < length/2:
                     self.black[piece.chess_type] = piece
                     piece.team = "black"
+                    piece.own_pieces = self.black
+                    piece.opponent_pieces = self.white
                     piece.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, False)
                 else:
                     self.white[piece.chess_type] = piece
                     piece.team = "white"
+                    piece.own_pieces = self.white
+                    piece.opponent_pieces = self.black
                     piece.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, True)
         self.pieces["white"] = self.white
         self.pieces["black"] = self.black
-        for piece in list(self.white.values()):
-            piece.update_possible_moves()
-        for piece in list(self.black.values()):
-            piece.update_possible_moves()
+        self.white["king"].update_pos()
 
     def update_turn(self):  # function for changing turns
         if self.turn == "white":
             self.turn = "black"
             for piece in list(self.white.values()):
                 piece.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, False)
-                piece.update_possible_moves()
             for piece in list(self.black.values()):
                 piece.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, True)
-                piece.update_possible_moves()
+            self.white["king"].update_pos()
         elif self.turn == "black":
             self.turn = "white"
             for piece in list(self.white.values()):
                 piece.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, True)
-                piece.update_possible_moves()
             for piece in list(self.black.values()):
                 piece.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, False)
-                piece.update_possible_moves()
+            self.black["king"].update_pos()
 
 
 
