@@ -44,42 +44,45 @@ class ChessPiece(QGraphicsItem):
 
     def move_piece(self):
         """Function that moves given piece and checks if it is allowed"""
+
         if self.future_pos in self.possible_moves:
             if self.chess_type == "king":
                 if self.future_pos[0] == self.current_pos[0] + 2 * self.square_size:  # castling to the right
-                    rook = self.chessboard.pieces[self.team]["rook1"]
-                    old_pos = self.current_pos
-                    old_rook_pos = rook.current_pos
-                    rook.current_pos = (self.future_pos[0] - self.square_size, self.future_pos[1])
-                    self.current_pos = self.future_pos
-                    if not self.check_for_checks("right"):
-                        rook.setPos(self.future_pos[0] - self.square_size, self.future_pos[1])
-                        rook.has_moved = True
-                        self.setPos(self.future_pos[0], self.future_pos[1])
-                        self.has_moved = True
-                        self.chessboard.update_turn()
-                    else:
-                        self.future_pos = self.current_pos = old_pos
-                        rook.future_pos = rook.current_pos = old_rook_pos
-                        self.setPos(self.future_pos[0], self.future_pos[1])
-                        rook.setPos(rook.future_pos[0], rook.future_pos[1])
+                    if "rook1" in self.own_pieces.keys():
+                        rook = self.chessboard.pieces[self.team]["rook1"]
+                        old_pos = self.current_pos
+                        old_rook_pos = rook.current_pos
+                        rook.current_pos = (self.future_pos[0] - self.square_size, self.future_pos[1])
+                        self.current_pos = self.future_pos
+                        if not self.check_for_checks("right"):
+                            rook.setPos(self.future_pos[0] - self.square_size, self.future_pos[1])
+                            rook.has_moved = True
+                            self.setPos(self.future_pos[0], self.future_pos[1])
+                            self.has_moved = True
+                            self.chessboard.update_turn()
+                        else:
+                            self.future_pos = self.current_pos = old_pos
+                            rook.future_pos = rook.current_pos = old_rook_pos
+                            self.setPos(self.future_pos[0], self.future_pos[1])
+                            rook.setPos(rook.future_pos[0], rook.future_pos[1])
                 elif self.future_pos[0] == self.current_pos[0] - 2 * self.square_size:  # castling to the left
-                    rook = self.chessboard.pieces[self.team]["rook0"]
-                    old_pos = self.current_pos
-                    old_rook_pos = rook.current_pos
-                    rook.current_pos = (self.future_pos[0] + self.square_size, self.future_pos[1])
-                    self.current_pos = self.future_pos
-                    if not self.check_for_checks("left"):
-                        rook.setPos(self.future_pos[0] + self.square_size, self.future_pos[1])
-                        rook.has_moved = True
-                        self.setPos(self.future_pos[0], self.future_pos[1])
-                        self.has_moved = True
-                        self.chessboard.update_turn()
-                    else:
-                        self.future_pos = self.current_pos = old_pos
-                        rook.future_pos = rook.current_pos = old_rook_pos
-                        self.setPos(self.future_pos[0], self.future_pos[1])
-                        rook.setPos(rook.future_pos[0], rook.future_pos[1])
+                    if "rook0" in self.own_pieces.keys():
+                        rook = self.chessboard.pieces[self.team]["rook0"]
+                        old_pos = self.current_pos
+                        old_rook_pos = rook.current_pos
+                        rook.current_pos = (self.future_pos[0] + self.square_size, self.future_pos[1])
+                        self.current_pos = self.future_pos
+                        if not self.check_for_checks("left"):
+                            rook.setPos(self.future_pos[0] + self.square_size, self.future_pos[1])
+                            rook.has_moved = True
+                            self.setPos(self.future_pos[0], self.future_pos[1])
+                            self.has_moved = True
+                            self.chessboard.update_turn()
+                        else:
+                            self.future_pos = self.current_pos = old_pos
+                            rook.future_pos = rook.current_pos = old_rook_pos
+                            self.setPos(self.future_pos[0], self.future_pos[1])
+                            rook.setPos(rook.future_pos[0], rook.future_pos[1])
                 else:  # "normal" move
                     old_pos = self.current_pos
                     self.current_pos = self.future_pos
@@ -122,6 +125,25 @@ class ChessPiece(QGraphicsItem):
         self.update_pos()
         self.update_opponent_check()
 
+    def mate_or_draw(self):
+        can_move = False
+        for piece in list(self.own_pieces.values()):
+            if can_move:
+                break
+            for move in piece.possible_moves:
+                if can_move:
+                    break
+                if piece.chess_type == "king":
+                    pass
+                else:
+                    old_pos = piece.current_pos
+                    piece.current_pos = piece.future_pos = move
+                    if not piece.check_for_checks(update_checks=False):
+                        piece.future_pos = piece.current_pos = old_pos
+                        can_move = True
+                        break
+                    piece.future_pos = piece.current_pos = old_pos
+
     def init_update_pos(self, online=False, future_pos=None):
         """Function for updating position during the initialization of chessboard."""
         self.current_pos = self.x(), self.y()
@@ -145,8 +167,8 @@ class ChessPiece(QGraphicsItem):
         for piece in list(self.opponent_pieces.values()):
             piece.check = opponent_check
 
-    def check_for_checks(self, castling=None):
-        """Function used for checking if there is a check after a move. Returns True if there is one and False if
+    def check_for_checks(self, castling=None, update_checks=True):
+        """Function used for checking if there is a check after a move. Returns "True" if there is one and "False" if
         there isn't."""
         check = False
 
@@ -176,7 +198,7 @@ class ChessPiece(QGraphicsItem):
                     if (self.own_pieces["king"].current_pos[0] + 2 * self.square_size, self.own_pieces["king"].current_pos[1]) == move:
                         check = True
 
-        if not check:
+        if not check and update_checks:
             for piece in list(self.own_pieces.values()):
                 piece.check = False
 
@@ -445,32 +467,29 @@ class ChessPiece(QGraphicsItem):
                             appr = False
                     if appr:
                         possible_moves.append(move)
+                        appr = True
                         if not self.has_moved:  # castling
-                            if (move[0] - self.current_pos[0] > 0
-                                    and not self.own_pieces["rook1"].has_moved):  # castling to the right
-                                move2 = (move[0] + self.square_size, move[1])
-                                for piece in list(self.own_pieces.values()):
-                                    if piece.current_pos == move2:
-                                        appr = False
-                                for piece in list(self.opponent_pieces.values()):
-                                    if piece.current_pos == move2:
-                                        appr = False
-                                if appr:
-                                    possible_moves.append((move[0] + 1 * self.square_size, move[1]))
-                            elif (move[0] - self.current_pos[0] < 0
-                                    and not self.own_pieces["rook0"].has_moved):  # castling to the left
-                                fut_pos = [
-                                    (move[0] - self.square_size, move[1]),
-                                    (move[0] - 2 * self.square_size, move[1]),
-                                ]
-                                for move2 in fut_pos:
+                            if move[0] - self.current_pos[0] > 0 and "rook1" in self.own_pieces.keys(): # castling to the right
+                                if not self.own_pieces["rook1"].has_moved:
+                                    move2 = (move[0] + self.square_size, move[1])
                                     for piece in list(self.own_pieces.values()):
                                         if piece.current_pos == move2:
                                             appr = False
                                     for piece in list(self.opponent_pieces.values()):
                                         if piece.current_pos == move2:
                                             appr = False
-                                if appr:
-                                    possible_moves.append((move[0] - 1 * self.square_size, move[1]))
+                                    if appr:
+                                        possible_moves.append(move2)
+                            elif move[0] - self.current_pos[0] < 0 and "rook0" in self.own_pieces.keys(): # castling to the left
+                                if not self.own_pieces["rook0"].has_moved:
+                                    move2 = (move[0] - self.square_size, move[1])
+                                    for piece in list(self.own_pieces.values()):
+                                        if piece.current_pos == move2:
+                                            appr = False
+                                    for piece in list(self.opponent_pieces.values()):
+                                        if piece.current_pos == move2:
+                                            appr = False
+                                    if appr:
+                                        possible_moves.append(move2)
         return possible_moves, possible_captures
 
