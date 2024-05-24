@@ -9,6 +9,7 @@ HOST = "localhost"
 PORT = 80
 SERVER_ADDRESS = (HOST, PORT)
 
+
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()

@@ -123,7 +123,6 @@ class ChessPiece(QGraphicsItem):
             self.setPos(self.future_pos[0], self.future_pos[1])
 
         self.update_pos()
-        self.update_opponent_check()
 
     def mate_or_draw(self):
         can_move = False
@@ -133,21 +132,32 @@ class ChessPiece(QGraphicsItem):
             for move in piece.possible_moves:
                 if can_move:
                     break
-                if piece.chess_type == "king":
-                    pass
-                else:
-                    old_pos = piece.current_pos
-                    piece.current_pos = piece.future_pos = move
-                    if not piece.check_for_checks(update_checks=False):
-                        piece.future_pos = piece.current_pos = old_pos
-                        can_move = True
-                        break
-                    piece.future_pos = piece.current_pos = old_pos
+                old_pos = piece.current_pos
+                piece.current_pos = piece.future_pos = move
+                if not piece.check_for_checks(update_checks=False):
+                    can_move = True
+                piece.future_pos = piece.current_pos = old_pos
+            for capture in piece.possible_captures:
+                if can_move:
+                    break
+                old_pos = piece.current_pos
+                piece.current_pos = piece.future_pos = capture
+                piece_for_capture = [piece for piece in list(self.opponent_pieces.values())
+                                     if piece.current_pos == piece.current_pos][0]
+                del self.opponent_pieces[piece_for_capture.chess_type]
+                if not piece.check_for_checks(update_checks=False):
+                    can_move = True
+                self.opponent_pieces[piece_for_capture.chess_type] = piece_for_capture
+                piece.future_pos = piece.current_pos = old_pos
+
+        self.update_pos()
 
         if not can_move and self.check:
             print("check mate")
         elif not can_move and not self.check:
             print("draw")
+        else:
+            print("git gud")
 
     def init_update_pos(self, online=False, future_pos=None):
         """Function for updating position during the initialization of chessboard."""
@@ -206,6 +216,7 @@ class ChessPiece(QGraphicsItem):
         if not check and update_checks:
             for piece in list(self.own_pieces.values()):
                 piece.check = False
+            self.update_opponent_check()
 
         return check
 
