@@ -144,6 +144,11 @@ class ChessPiece(QGraphicsItem):
                         break
                     piece.future_pos = piece.current_pos = old_pos
 
+        if not can_move and self.check:
+            print("check mate")
+        elif not can_move and not self.check:
+            print("draw")
+
     def init_update_pos(self, online=False, future_pos=None):
         """Function for updating position during the initialization of chessboard."""
         self.current_pos = self.x(), self.y()
