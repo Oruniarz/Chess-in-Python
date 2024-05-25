@@ -1,8 +1,8 @@
 import sys
-
 from PyQt6.QtWidgets import (QApplication, QGraphicsView, QVBoxLayout, QPushButton,
                              QRadioButton, QWidget, QLineEdit, QLabel)
 from chessboard import Chessboard
+from end_game_window import EndGameWindow
 
 DATA_SIZE = 2000
 HOST = "localhost"
@@ -67,11 +67,15 @@ class MainWindow(QWidget):
         port = int(self.port_line.text())
 
         if not self.scene:
-            self.scene = Chessboard(square_size=self.square_size)
+            self.scene = Chessboard(square_size=self.square_size, main_window=self)
             self.view.setScene(self.scene)
             self.view.setWindowTitle("Chessboard")
             self.view.show()
             self.hide()
+
+    def show_end_game_window(self, result=None, winning_team=None):
+        dialog = EndGameWindow(self, result=result, winning_team=winning_team)
+        dialog.exec()
 
 
 def main():

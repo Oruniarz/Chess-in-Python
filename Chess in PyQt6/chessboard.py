@@ -4,9 +4,10 @@ from chess_piece import ChessPiece
 
 
 class Chessboard(QGraphicsScene):
-    def __init__(self, square_size):
+    def __init__(self, square_size, main_window):
         super().__init__()
         self.square_size = square_size
+        self.main_window = main_window
         self.pieces = {}
         self.white = {}
         self.black = {}
@@ -142,6 +143,7 @@ class Chessboard(QGraphicsScene):
             piece.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, False)
         for piece in list(self.black.values()):
             piece.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, False)
+        self.main_window.show_end_game_window(result, winning_team)
 
 
 
