@@ -126,16 +126,22 @@ class Chessboard(QGraphicsScene):
                 piece.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, False)
             for piece in list(self.black.values()):
                 piece.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, True)
-            self.black["king"].mate_or_draw()
             self.black["king"].update_pos()
+            self.black["king"].mate_or_draw()
         elif self.turn == "black":
             self.turn = "white"
             for piece in list(self.white.values()):
                 piece.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, True)
             for piece in list(self.black.values()):
                 piece.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, False)
-            self.white["king"].mate_or_draw()
             self.white["king"].update_pos()
+            self.white["king"].mate_or_draw()
+
+    def game_over(self, result, winning_team=None):
+        for piece in list(self.white.values()):
+            piece.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, False)
+        for piece in list(self.black.values()):
+            piece.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, False)
 
 
 
