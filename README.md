@@ -10,6 +10,7 @@ In repo there are some files that are not currently used but will be in the futu
 If they are bodering you feel free to get rid of them. If u find any bugs/errors feel free to message me. 
 
 Some screens from the app:
+
 ![image](https://github.com/Oruniarz/Chess-in-Python/assets/70721574/47b263a9-8d73-462b-9b78-7358830ad649)
 
 ![image](https://github.com/Oruniarz/Chess-in-Python/assets/70721574/01372ba8-6440-46aa-a3e0-20f24f1ac34d)
