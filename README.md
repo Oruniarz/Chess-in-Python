@@ -1,13 +1,15 @@
 # Chess in Python in PyQt6
-A game allowing to play chess written in Python. 
+An app allowing you to play a game of chess. Application is writte in Python.
 
-For now it allows you to customize the size of tiles of a chessboard. There are almost all rules of chess applied in the game with exception of pawn promotion (in development). 
+For now it allows you only to customize the size of tiles of a chessboard. There are almost all rules of chess applied in the game with exception of pawn promotion (in development). 
 
-In order to run application you need to run main.py (.exe file will be added in the future)
+In order to run application you need to run main.py (.exe file will be added in the future).
 
-In repo there are some files that are not currently used but will be in the future. The game will be getting more developped with time.
+In repo there are some files that are not currently used (like "chess_ai" or "chess_server") but will be in the future. If they are bothering you feel free to get rid of them.
 
-If they are bodering you feel free to get rid of them. If u find any bugs/errors feel free to message me. 
+The game will be getting more developped with time.
+ 
+If u find any bugs/errors feel free to inform me. 
 
 Some screens from the app:
 
