@@ -256,7 +256,7 @@ class ChessPiece(QGraphicsItem):
         possible_moves = []
         possible_captures = []
         fut_pos = (self.current_pos[0], self.current_pos[1] + direction * self.square_size)
-        if fut_pos[1] <= 7 * self.square_size:
+        if 0 <= fut_pos[1] <= 7 * self.square_size:
             for piece in list(self.own_pieces.values()):
                 if piece.current_pos == fut_pos:
                     appr = False
